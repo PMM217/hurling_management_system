@@ -11,7 +11,7 @@ const client = new MongoClient(process.env.ATLAS_URI, {
   }
 });
 
-let databa
+let database
 
 /*async function run() {
   try {
