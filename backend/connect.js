@@ -12,6 +12,15 @@ const client = new MongoClient(process.env.ATLAS_URI, {
 });
 
 let database
+/* connect to Server creates connection between code and teamData database */
+module.exports = {
+  connectToServer: () => {                      
+    database = client.db("teamData")
+  },
+  getDb: () => {
+    return database
+  }
+}
 
 /*async function run() {
   try {
