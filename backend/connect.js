@@ -1,8 +1,6 @@
-
 const { MongoClient, ServerApiVersion } = require('mongodb');
 require("dotenv").config({path: "./config.env"})
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(process.env.ATLAS_URI, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -11,16 +9,61 @@ const client = new MongoClient(process.env.ATLAS_URI, {
   }
 });
 
-let database
-/* connect to Server creates connection between code and teamData database */
+let database;
+
 module.exports = {
-  connectToServer: () => {                      
-    database = client.db("teamData")
+  connectToServer: async () => {                      
+    try {
+      await client.connect();
+      console.log("Connected successfully to MongoDB");
+      database = client.db("teamData");
+    } catch (error) {
+      console.error("Failed to connect to MongoDB:", error);
+      throw error;
+    }
   },
   getDb: () => {
-    return database
+    if (!database) {
+      throw new Error("Database not initialized. Call connectToServer first.");
+    }
+    return database;
   }
 }
+
+
+
+
+
+// const { MongoClient, ServerApiVersion } = require('mongodb');
+// require("dotenv").config({path: "./config.env"})
+
+// // Create a MongoClient with a MongoClientOptions object to set the Stable API version
+// const client = new MongoClient(process.env.ATLAS_URI, {
+//   serverApi: {
+//     version: ServerApiVersion.v1,
+//     strict: true,
+//     deprecationErrors: true,
+//   }
+// });
+
+// let database
+// /* connect to Server creates connection between code and teamData database */
+// module.exports = {
+//   connectToServer: () => {                      
+//     database = client.db("teamData")
+//   },
+//   getDb: () => {
+//     return database
+//   }
+// }
+
+
+
+
+
+
+
+
 
 /*async function run() {
   try {
