@@ -2,6 +2,7 @@ const express = require("express")
 const cors = require("cors")
 const connect = require("./connect")
 const players = require("./playerRoutes")
+const sessions = require("./sessionRoutes")
 
 const app = express()
 const PORT = 3000
@@ -12,6 +13,7 @@ app.use(express.json())
 
 /* Allows routes to be accessed from other parts of code */
 app.use(players)
+app.use(sessions)
 
 /* Creates server */
 async function startServer() {
