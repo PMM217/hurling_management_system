@@ -3,17 +3,22 @@ const cors = require("cors")
 const connect = require("./connect")
 const players = require("./playerRoutes")
 const sessions = require("./sessionRoutes")
+const users = require("./routes/userRoutes")  // Import user routes
 
 const app = express()
 const PORT = 3000
 
-/* Function used to connect middleware - handles cors library resources across different domains (F+B hosted on different ports) */
-app.use(cors())
+/* Middleware */
+app.use(cors({
+    origin: 'http://localhost:3001',
+    credentials: true
+}))
 app.use(express.json())
 
-/* Allows routes to be accessed from other parts of code */
+/* Routes */
 app.use(players)
 app.use(sessions)
+app.use('/api/users', users)  // Mount user routes with prefix
 
 /* Creates server */
 async function startServer() {
