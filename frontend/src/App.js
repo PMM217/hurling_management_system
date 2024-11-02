@@ -1,13 +1,18 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Navbar, Nav, Container, Button, Form, Table, Card } from 'react-bootstrap';
+import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 import SessionList from './components/SessionList';
-import Login from './pages/Login';  // Import Login from pages
-import Register from './pages/Register';  // Import Register from pages
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import CreateSession from './pages/CreateSession';
+import SessionDetails from './pages/SessionDetails';
 
 // Navigation Component
 const NavigationBar = ({ token, onLogout }) => {
+  const userRole = localStorage.getItem('userRole');
+
   return (
     <Navbar bg="dark" variant="dark" expand="lg">
       <Container>
@@ -21,6 +26,9 @@ const NavigationBar = ({ token, onLogout }) => {
                 <Nav.Link as={Link} to="/sessions">Sessions</Nav.Link>
                 <Nav.Link as={Link} to="/players">Players</Nav.Link>
                 <Nav.Link as={Link} to="/profile">Profile</Nav.Link>
+                {userRole === 'manager' && (
+                  <Nav.Link as={Link} to="/create-session">Create Session</Nav.Link>
+                )}
                 <Button variant="outline-light" onClick={onLogout}>Logout</Button>
               </>
             ) : (
@@ -36,25 +44,15 @@ const NavigationBar = ({ token, onLogout }) => {
   );
 };
 
-// Other page components (Dashboard, Players, Profile)
-const Dashboard = () => {
-  // ... Dashboard component code ...
-};
-
-const Players = () => {
-  // ... Players component code ...
-};
-
-const Profile = () => {
-  // ... Profile component code ...
-};
-
 // Main App Component
 const App = () => {
   const [token, setToken] = React.useState(localStorage.getItem('token'));
+  const userRole = localStorage.getItem('userRole');
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
     setToken(null);
   };
 
@@ -63,13 +61,41 @@ const App = () => {
       <div>
         <NavigationBar token={token} onLogout={handleLogout} />
         <Routes>
+          {/* Public Routes */}
           <Route path="/login" element={!token ? <Login setToken={setToken} /> : <Navigate to="/dashboard" />} />
           <Route path="/register" element={!token ? <Register /> : <Navigate to="/dashboard" />} />
+
+          {/* Protected Routes */}
           <Route path="/dashboard" element={token ? <Dashboard /> : <Navigate to="/login" />} />
           <Route path="/sessions" element={token ? <SessionList /> : <Navigate to="/login" />} />
-          <Route path="/players" element={token ? <Players /> : <Navigate to="/login" />} />
-          <Route path="/profile" element={token ? <Profile /> : <Navigate to="/login" />} />
-          <Route path="/" element={<Navigate to={token ? "/dashboard" : "/login"} />} />
+          <Route 
+            path="/create-session" 
+            element={
+              token && userRole === 'manager' 
+                ? <CreateSession /> 
+                : <Navigate to={token ? "/dashboard" : "/login"} />
+            } 
+          />
+          <Route 
+            path="/session-details/:id" 
+            element={
+              token && userRole === 'manager' 
+                ? <SessionDetails /> 
+                : <Navigate to={token ? "/dashboard" : "/login"} />
+            } 
+          />
+
+          {/* Root Route - Redirect to login if not authenticated, dashboard if authenticated */}
+          <Route 
+            path="/" 
+            element={<Navigate to={token ? "/dashboard" : "/login"} />} 
+          />
+
+          {/* Catch all other routes and redirect to login/dashboard */}
+          <Route 
+            path="*" 
+            element={<Navigate to={token ? "/dashboard" : "/login"} />} 
+          />
         </Routes>
       </div>
     </Router>

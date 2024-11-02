@@ -2,7 +2,7 @@ const express = require("express")
 const cors = require("cors")
 const connect = require("./connect")
 const players = require("./playerRoutes")
-const sessions = require("./sessionRoutes")
+const sessions = require("./routes/sessionRoutes");
 const users = require("./routes/userRoutes")  // Import user routes
 
 const app = express()
@@ -12,13 +12,15 @@ const PORT = 3000
 app.use(cors({
     origin: 'http://localhost:3001',
     credentials: true
-}))
+}));
+
 app.use(express.json())
 
 /* Routes */
 app.use(players)
 app.use(sessions)
 app.use('/api/users', users)  // Mount user routes with prefix
+app.use("/api", sessions);
 
 /* Creates server */
 async function startServer() {
