@@ -8,11 +8,12 @@ const users = require("./routes/userRoutes")  // Import user routes
 const app = express()
 const PORT = 3000
 
-/* Middleware */
+/* App.use funtion that mounts Middleware - cors library helps sharing resources across differennt domains */
 app.use(cors({
     origin: 'http://localhost:3001',
     credentials: true
 }));
+
 
 app.use(express.json())
 
@@ -22,7 +23,7 @@ app.use(sessions)
 app.use('/api/users', users)  // Mount user routes with prefix
 app.use("/api", sessions);
 
-/* Creates server */
+/* app.listen Creates server */
 async function startServer() {
     try {
         console.log("Attempting to connect to MongoDB...");

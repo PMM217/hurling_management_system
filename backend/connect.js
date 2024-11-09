@@ -12,16 +12,17 @@ const client = new MongoClient(process.env.ATLAS_URI, {
 let database;
 
 module.exports = {
-  connectToServer: async () => {                      
+  connectToServer: async () => {            //Creates initial connection between code and teamData        
     try {
       await client.connect();
       console.log("Connected successfully to MongoDB");
-      database = client.db("teamData");
+      database = client.db("teamData"); //Allows code to access Database (Collection on MongoDB)
     } catch (error) {
       console.error("Failed to connect to MongoDB:", error);
       throw error;
     }
   },
+  // Accessing database after initial connection use the getDB function 
   getDb: () => {
     if (!database) {
       throw new Error("Database not initialized. Call connectToServer first.");

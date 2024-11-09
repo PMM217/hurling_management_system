@@ -1,8 +1,8 @@
 const express = require("express")
 const database = require("./connect")
-const ObjectId = require("mongodb").ObjectId
+const ObjectId = require("mongodb").ObjectId //Importing this allows mongodb to convert a string to ObjectId
 
-let playerRoutes = express.Router()
+let playerRoutes = express.Router() //gives access to express.Router object
 
 // Helper function for error handling
 const handleErrors = (error, response) => {
@@ -10,15 +10,16 @@ const handleErrors = (error, response) => {
     response.status(500).json({ message: "Internal server error", error: error.toString() });
 }
 
-//1 - Retrieve all - http://localhost:3000/players
+//1 - Retrieve all - as an example this would create -  http://localhost:3000/players - the .get method always requires a request and response
+//async is added with the await key word to make sure code waits until data is finished processing before it moves on
 playerRoutes.route("/players").get(async(request, response) => {
     try {
-        let db = database.getDb()
+        let db = database.getDb() //gets access to mongo database
         console.log("Attempting to retrieve all players");
-        let data = await db.collection("playerData").find({}).toArray()
+        let data = await db.collection("playerData").find({}).toArray() //without "toArray" mongo returns a cursor therefore adding toArray returns the data in the correct format
         console.log("Retrieved data:", data);
         if (data.length > 0) {
-            response.json(data)
+            response.json(data) //taking data - turning it into JSON format - response is returning it to frontend
         } else {
             console.log("No players found");
             response.status(404).json({ message: "No players found in the database" })
@@ -50,12 +51,13 @@ playerRoutes.route("/players/:id").get(async(request, response) => {
 playerRoutes.route("/players").post(async(request, response) => {
     try {
         let db = database.getDb()
+        //new object which matches the properties on mongodb
         let mongoObject = {
             name: request.body.name,
             position: request.body.position
         }
         console.log("Attempting to create new player:", mongoObject);
-        let data = await db.collection("playerData").insertOne(mongoObject)
+        let data = await db.collection("playerData").insertOne(mongoObject) 
         console.log("Insert result:", data);
         response.status(201).json(data)
     } catch (error) {

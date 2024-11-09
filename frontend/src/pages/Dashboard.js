@@ -1,27 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Card, Button, Alert, Modal, Form } from 'react-bootstrap';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // For HTTP requests
+import { useNavigate } from 'react-router-dom'; //For navigation between routes
 
 const Dashboard = () => {
-  const [sessions, setSessions] = useState([]);
-  const [userRole] = useState(localStorage.getItem('userRole'));
-  const [message, setMessage] = useState('');
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedSession, setSelectedSession] = useState(null);
+    // State management using React hooks
+  const [sessions, setSessions] = useState([]); // Stores all training sessions
+  const [userRole] = useState(localStorage.getItem('userRole')); // Gets user role from localStorage
+  const [message, setMessage] = useState('');  // For success/error messages
+  const [showEditModal, setShowEditModal] = useState(false);  // Controls edit modal visibility
+  const [selectedSession, setSelectedSession] = useState(null); // Stores session being edited
+   // Form data state for editing sessions
   const [editFormData, setEditFormData] = useState({
     date: '',
     time: '',
     location: '',
     description: ''
   });
-  const userId = localStorage.getItem('userId');
-  const navigate = useNavigate();
+  const userId = localStorage.getItem('userId'); // Get current user's ID
+  const navigate = useNavigate(); // Hook for navigation
 
+// Fetch sessions when component mounts
   useEffect(() => {
     fetchSessions();
   }, []);
 
+  // Function to fetch all training sessions from backend
   const fetchSessions = async () => {
     try {
       const response = await axios.get('http://localhost:3000/api/sessions');
@@ -31,6 +35,7 @@ const Dashboard = () => {
     }
   };
 
+  // Handle player attendance responses
   const handleAttendance = async (sessionId, isAttending) => {
     try {
       await axios.post('http://localhost:3000/api/sessions/attendance', {
@@ -38,10 +43,12 @@ const Dashboard = () => {
         userId,
         attending: isAttending
       });
-      
+
+  // Show success message and refresh sessions    
       setMessage(`Thanks for confirming your ${isAttending ? 'attendance' : 'non-attendance'} for training`);
       fetchSessions();
-      
+
+   // The below will Clear message after 3 seconds   
       setTimeout(() => {
         setMessage('');
       }, 3000);
@@ -50,10 +57,11 @@ const Dashboard = () => {
       setMessage('Failed to update attendance. Please try again.');
     }
   };
-
+// When using edit button - session data for editing
   const handleEdit = (session) => {
     const sessionDate = new Date(session.date);
     setSelectedSession(session);
+    // Split date and time for form fields
     setEditFormData({
       date: sessionDate.toISOString().split('T')[0],
       time: sessionDate.toTimeString().split(':').slice(0, 2).join(':'),
@@ -62,7 +70,7 @@ const Dashboard = () => {
     });
     setShowEditModal(true);
   };
-
+  // Update session with new data
   const handleUpdate = async () => {
     try {
       const dateTime = new Date(`${editFormData.date}T${editFormData.time}`);
@@ -80,7 +88,7 @@ const Dashboard = () => {
       setMessage('Error updating session');
     }
   };
-
+  // Delete session with confirmation message asking are you sure?
   const handleDelete = async (sessionId) => {
     if (window.confirm('Are you sure you want to delete this session?')) {
       try {
@@ -95,6 +103,7 @@ const Dashboard = () => {
     }
   };
 
+// Player view component - Shows only session list and attendance options
   const PlayerView = () => (
     <div>
       <h2 className="mb-4">Upcoming Training Sessions</h2>
@@ -139,7 +148,7 @@ const Dashboard = () => {
       })}
     </div>
   );
-
+// Manager view component - Shows full CRUD functionality and attendance overview
   const ManagerView = () => (
     <div>
       <h2 className="mb-4">Training Sessions Overview</h2>
@@ -240,7 +249,7 @@ const Dashboard = () => {
       </Modal>
     </div>
   );
-
+// Conditional rendering based on user role - This is where the Role Based Access COntrol occurs
   return (
     <Container className="mt-4">
       {userRole === 'manager' ? <ManagerView /> : <PlayerView />}

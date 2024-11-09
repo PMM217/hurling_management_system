@@ -1,17 +1,18 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Navbar, Nav, Container, Button } from 'react-bootstrap';
-import SessionList from './components/SessionList';
+import { Navbar, Nav, Container, Button } from 'react-bootstrap';  // Remove unused imports
+// import SessionList from './components/SessionList';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import CreateSession from './pages/CreateSession';
 import SessionDetails from './pages/SessionDetails';
 
+
 // Navigation Component
 const NavigationBar = ({ token, onLogout }) => {
-  const userRole = localStorage.getItem('userRole');
+  const userRole = localStorage.getItem('userRole'); // Add this line to get user role
 
   return (
     <Navbar bg="dark" variant="dark" expand="lg">
@@ -23,7 +24,7 @@ const NavigationBar = ({ token, onLogout }) => {
             {token ? (
               <>
                 <Nav.Link as={Link} to="/dashboard">Dashboard</Nav.Link>
-                <Nav.Link as={Link} to="/sessions">Sessions</Nav.Link>
+                {/* <Nav.Link as={Link} to="/sessions">Sessions</Nav.Link> */}
                 <Nav.Link as={Link} to="/players">Players</Nav.Link>
                 <Nav.Link as={Link} to="/profile">Profile</Nav.Link>
                 {userRole === 'manager' && (
@@ -47,12 +48,11 @@ const NavigationBar = ({ token, onLogout }) => {
 // Main App Component
 const App = () => {
   const [token, setToken] = React.useState(localStorage.getItem('token'));
-  const userRole = localStorage.getItem('userRole');
+  const userRole = localStorage.getItem('userRole'); // Add this line
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('userRole');
-    localStorage.removeItem('userId');
+    localStorage.removeItem('userRole'); // Also remove userRole
     setToken(null);
   };
 
@@ -61,41 +61,13 @@ const App = () => {
       <div>
         <NavigationBar token={token} onLogout={handleLogout} />
         <Routes>
-          {/* Public Routes */}
           <Route path="/login" element={!token ? <Login setToken={setToken} /> : <Navigate to="/dashboard" />} />
           <Route path="/register" element={!token ? <Register /> : <Navigate to="/dashboard" />} />
-
-          {/* Protected Routes */}
           <Route path="/dashboard" element={token ? <Dashboard /> : <Navigate to="/login" />} />
-          <Route path="/sessions" element={token ? <SessionList /> : <Navigate to="/login" />} />
-          <Route 
-            path="/create-session" 
-            element={
-              token && userRole === 'manager' 
-                ? <CreateSession /> 
-                : <Navigate to={token ? "/dashboard" : "/login"} />
-            } 
-          />
-          <Route 
-            path="/session-details/:id" 
-            element={
-              token && userRole === 'manager' 
-                ? <SessionDetails /> 
-                : <Navigate to={token ? "/dashboard" : "/login"} />
-            } 
-          />
-
-          {/* Root Route - Redirect to login if not authenticated, dashboard if authenticated */}
-          <Route 
-            path="/" 
-            element={<Navigate to={token ? "/dashboard" : "/login"} />} 
-          />
-
-          {/* Catch all other routes and redirect to login/dashboard */}
-          <Route 
-            path="*" 
-            element={<Navigate to={token ? "/dashboard" : "/login"} />} 
-          />
+          {/* <Route path="/sessions" element={token ? <SessionList /> : <Navigate to="/login" />} /> */}
+          <Route path="/create-session" element={token && userRole === 'manager' ? <CreateSession /> : <Navigate to="/dashboard" />} />
+          <Route path="/" element={<Navigate to={token ? "/dashboard" : "/login"} />} />
+          <Route path="/session-details/:id" element={token && userRole === 'manager' ? <SessionDetails /> : <Navigate to="/dashboard" />} />
         </Routes>
       </div>
     </Router>
