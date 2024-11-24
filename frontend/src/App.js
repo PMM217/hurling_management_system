@@ -7,6 +7,7 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import CreateSession from './pages/CreateSession';
 import SessionDetails from './pages/SessionDetails';
+import Players from './pages/Players';
 import axios from 'axios';
 
 // Navigation Component
@@ -22,19 +23,21 @@ const NavigationBar = ({ token, onLogout }) => {
           <Nav className="ms-auto">
             {token ? (
               <>
-                <Nav.Link as={Link} to="/dashboard">Dashboard</Nav.Link>
+              <Nav.Link as={Link} to="/dashboard">Dashboard</Nav.Link>
+              {userRole === 'manager' && (  // Only show Players link for managers
                 <Nav.Link as={Link} to="/players">Players</Nav.Link>
-                <Nav.Link as={Link} to="/profile">Profile</Nav.Link>
-                {userRole === 'manager' && (
-                  <Nav.Link as={Link} to="/create-session">Create Session</Nav.Link>
-                )}
-                <Button variant="outline-light" onClick={onLogout}>Logout</Button>
-              </>
-            ) : (
-              <>
-                <Nav.Link as={Link} to="/login">Login</Nav.Link>
-                <Nav.Link as={Link} to="/register">Register</Nav.Link>
-              </>
+              )}
+              <Nav.Link as={Link} to="/profile">Profile</Nav.Link>
+              {userRole === 'manager' && (
+                <Nav.Link as={Link} to="/create-session">Create Session</Nav.Link>
+              )}
+              <Button variant="outline-light" onClick={onLogout}>Logout</Button>
+            </>
+          ) : (
+            <>
+              <Nav.Link as={Link} to="/login">Login</Nav.Link>
+              <Nav.Link as={Link} to="/register">Register</Nav.Link>
+            </>
             )}
           </Nav>
         </Navbar.Collapse>
@@ -132,7 +135,14 @@ const App = () => {
               </ProtectedRoute>
             } 
           />
-
+            <Route 
+    path="/players" 
+    element={
+        <ProtectedRoute allowedRoles={['manager']}>
+            <Players />
+        </ProtectedRoute>
+    } 
+/>
           <Route 
             path="/session-details/:id" 
             element={

@@ -123,8 +123,56 @@ router.get("/verify", verifyToken, async (req, res) => {
 
         res.json({ valid: true, user });
     } catch (error) {
-        console.error('Verification error:', error);
         res.status(500).json({ message: "Error verifying token" });
+    }
+});
+
+// Get all players endpoint
+router.get("/players", verifyToken, async (req, res) => {
+    try {
+        const db = database.getDb();
+        
+        // Only allow managers to access this endpoint
+        if (req.user.role !== 'manager') {
+            return res.status(403).json({ message: "Access denied. Managers only." });
+        }
+
+        // Get all users with role 'player'
+        const players = await db.collection("users")
+            .find({ role: 'player' })
+            .project({ password: 0 }) // Exclude passwords from response
+            .toArray();
+
+        res.json(players);
+    } catch (error) {
+        console.error("Error fetching players:", error);
+        res.status(500).json({ message: "Error fetching players" });
+    }
+});
+
+// Delete player endpoint
+router.delete("/players/:id", verifyToken, async (req, res) => {
+    try {
+        const db = database.getDb();
+        
+        // Only allow managers to delete players
+        if (req.user.role !== 'manager') {
+            return res.status(403).json({ message: "Access denied. Managers only." });
+        }
+
+        const result = await db.collection("users").deleteOne({
+            _id: new ObjectId(req.params.id),
+            role: 'player' // Extra check to ensure only players can be deleted
+        });
+
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ message: "Player not found" });
+        }
+
+        res.json({ message: "Player deleted successfully" });
+    } catch (error) {
+        console.error("Error deleting player:", error);
+        res.status(500).json({ message: "Error deleting player" });
     }
 });
 
