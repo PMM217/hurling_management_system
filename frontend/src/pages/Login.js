@@ -16,19 +16,42 @@ const Login = ({ setToken }) => {
     setLoading(true);
 
     try {
+      // Make login request
       const response = await axios.post('http://localhost:3000/api/users/login', {
         email,
         password
       });
 
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('userRole', response.data.role);
-      localStorage.setItem('userId', response.data.user.id);
-      setToken(response.data.token);
-      
-      navigate('/dashboard');
+      console.log('Login response:', response.data); // Debug log
+
+      // Extract token and user data from response
+      const { token, user } = response.data;
+
+      if (token) {
+        // Store JWT token and user data in localStorage
+        localStorage.setItem('jwt_token', token);
+        localStorage.setItem('userRole', user.role);
+        localStorage.setItem('userId', user.id);
+
+        // Configure axios to use JWT token for future requests
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+        // Update parent component's state
+        if (setToken) {
+          setToken(token);
+        }
+
+        // Navigate to dashboard
+        navigate('/dashboard');
+      } else {
+        setError('Invalid login response');
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to login');
+      console.error('Login error details:', err);
+      setError(
+        err.response?.data?.message || 
+        'Failed to login. Please try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -50,6 +73,7 @@ const Login = ({ setToken }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                placeholder="Enter your email"
               />
             </Form.Group>
 
@@ -60,6 +84,7 @@ const Login = ({ setToken }) => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                placeholder="Enter your password"
               />
             </Form.Group>
 

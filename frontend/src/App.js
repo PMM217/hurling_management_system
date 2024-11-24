@@ -1,18 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link, Navigate } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Navbar, Nav, Container, Button } from 'react-bootstrap';  // Remove unused imports
-// import SessionList from './components/SessionList';
+import { Navbar, Nav, Container, Button } from 'react-bootstrap';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import CreateSession from './pages/CreateSession';
 import SessionDetails from './pages/SessionDetails';
-
+import axios from 'axios';
 
 // Navigation Component
 const NavigationBar = ({ token, onLogout }) => {
-  const userRole = localStorage.getItem('userRole'); // Add this line to get user role
+  const userRole = localStorage.getItem('userRole');
 
   return (
     <Navbar bg="dark" variant="dark" expand="lg">
@@ -24,7 +23,6 @@ const NavigationBar = ({ token, onLogout }) => {
             {token ? (
               <>
                 <Nav.Link as={Link} to="/dashboard">Dashboard</Nav.Link>
-                {/* <Nav.Link as={Link} to="/sessions">Sessions</Nav.Link> */}
                 <Nav.Link as={Link} to="/players">Players</Nav.Link>
                 <Nav.Link as={Link} to="/profile">Profile</Nav.Link>
                 {userRole === 'manager' && (
@@ -45,15 +43,60 @@ const NavigationBar = ({ token, onLogout }) => {
   );
 };
 
+// Protected Route Component
+const ProtectedRoute = ({ children, allowedRoles = [] }) => {
+  const token = localStorage.getItem('jwt_token');
+  const userRole = localStorage.getItem('userRole');
+
+  if (!token) return <Navigate to="/login" />;
+  if (allowedRoles.length && !allowedRoles.includes(userRole)) {
+    return <Navigate to="/dashboard" />;
+  }
+  return children;
+};
+
 // Main App Component
 const App = () => {
-  const [token, setToken] = React.useState(localStorage.getItem('token'));
-  const userRole = localStorage.getItem('userRole'); // Add this line
+  const [token, setToken] = useState(localStorage.getItem('jwt_token'));
+  // const userRole = localStorage.getItem('userRole');
+
+  // Setup axios defaults when token changes
+  useEffect(() => {
+    if (token) {
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    } else {
+      delete axios.defaults.headers.common['Authorization'];
+    }
+  }, [token]);
+
+  // Verify token on app load and token changes
+  useEffect(() => {
+    const verifyToken = async () => {
+      if (token) {
+        try {
+          await axios.get('http://localhost:3000/api/users/verify', {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          console.log('Token verified successfully');
+        } catch (error) {
+          console.error('Token verification failed:', error);
+          handleLogout();
+        }
+      }
+    };
+
+    verifyToken();
+  }, [token]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userRole'); // Also remove userRole
+    // Clear all auth-related data
+    localStorage.removeItem('jwt_token');
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userId');
     setToken(null);
+    
+    // Clear axios default header
+    delete axios.defaults.headers.common['Authorization'];
   };
 
   return (
@@ -61,13 +104,49 @@ const App = () => {
       <div>
         <NavigationBar token={token} onLogout={handleLogout} />
         <Routes>
-          <Route path="/login" element={!token ? <Login setToken={setToken} /> : <Navigate to="/dashboard" />} />
-          <Route path="/register" element={!token ? <Register /> : <Navigate to="/dashboard" />} />
-          <Route path="/dashboard" element={token ? <Dashboard /> : <Navigate to="/login" />} />
-          {/* <Route path="/sessions" element={token ? <SessionList /> : <Navigate to="/login" />} /> */}
-          <Route path="/create-session" element={token && userRole === 'manager' ? <CreateSession /> : <Navigate to="/dashboard" />} />
-          <Route path="/" element={<Navigate to={token ? "/dashboard" : "/login"} />} />
-          <Route path="/session-details/:id" element={token && userRole === 'manager' ? <SessionDetails /> : <Navigate to="/dashboard" />} />
+          {/* Public routes */}
+          <Route 
+            path="/login" 
+            element={!token ? <Login setToken={setToken} /> : <Navigate to="/dashboard" />} 
+          />
+          <Route 
+            path="/register" 
+            element={!token ? <Register /> : <Navigate to="/dashboard" />} 
+          />
+
+          {/* Protected routes */}
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/create-session" 
+            element={
+              <ProtectedRoute allowedRoles={['manager']}>
+                <CreateSession />
+              </ProtectedRoute>
+            } 
+          />
+
+          <Route 
+            path="/session-details/:id" 
+            element={
+              <ProtectedRoute allowedRoles={['manager']}>
+                <SessionDetails />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Default route */}
+          <Route 
+            path="/" 
+            element={<Navigate to={token ? "/dashboard" : "/login"} />} 
+          />
         </Routes>
       </div>
     </Router>

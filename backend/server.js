@@ -3,7 +3,7 @@ const cors = require("cors")
 const connect = require("./connect")
 const players = require("./playerRoutes")
 const sessions = require("./routes/sessionRoutes");
-const users = require("./routes/userRoutes")  // Import user routes
+const userRoutes = require("./routes/userRoutes")  // Changed from users to userRoutes
 
 const app = express()
 const PORT = 3000
@@ -14,13 +14,11 @@ app.use(cors({
     credentials: true
 }));
 
-
 app.use(express.json())
 
 /* Routes */
+app.use('/api/users', userRoutes)  // Changed from users to userRoutes
 app.use(players)
-app.use(sessions)
-app.use('/api/users', users)  // Mount user routes with prefix
 app.use("/api", sessions);
 
 /* app.listen Creates server */
