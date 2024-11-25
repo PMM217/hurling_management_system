@@ -40,6 +40,7 @@ router.post("/register", async (req, res) => {
             email,
             password,
             role,
+            profileInfo: {}, // Initialize empty profile info
             createdAt: new Date()
         });
 
@@ -176,13 +177,15 @@ router.delete("/players/:id", verifyToken, async (req, res) => {
     }
 });
 
-// Protected route example - Get user profile
+// Get user profile endpoint
 router.get("/profile", verifyToken, async (req, res) => {
     try {
         const db = database.getDb();
+        const userId = new ObjectId(req.user.userId);
+        
         const user = await db.collection("users").findOne(
-            { _id: new ObjectId(req.user.userId) },
-            { projection: { password: 0 } }
+            { _id: userId },
+            { projection: { password: 0 } } // Exclude password from response
         );
 
         if (!user) {
@@ -191,7 +194,45 @@ router.get("/profile", verifyToken, async (req, res) => {
 
         res.json(user);
     } catch (error) {
+        console.error("Error fetching profile:", error);
         res.status(500).json({ message: "Error fetching profile" });
+    }
+});
+
+// Update profile endpoint
+router.put("/profile", verifyToken, async (req, res) => {
+    try {
+        const db = database.getDb();
+        const userId = new ObjectId(req.user.userId);
+        
+        const { name, age, height, weight, position, county, imageUrl } = req.body;
+        
+        const result = await db.collection("users").updateOne(
+            { _id: userId },
+            { 
+                $set: {
+                    name,
+                    profileInfo: {
+                        age,
+                        height,
+                        weight,
+                        position,
+                        county
+                    },
+                    imageUrl,
+                    updatedAt: new Date()
+                }
+            }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.json({ message: "Profile updated successfully" });
+    } catch (error) {
+        console.error("Error updating profile:", error);
+        res.status(500).json({ message: "Error updating profile" });
     }
 });
 

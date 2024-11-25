@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import CreateSession from './pages/CreateSession';
 import SessionDetails from './pages/SessionDetails';
 import Players from './pages/Players';
+import Profile from './pages/Profile';
 import axios from 'axios';
 
 // Navigation Component
@@ -149,9 +150,17 @@ const App = () => {
               <ProtectedRoute allowedRoles={['manager']}>
                 <SessionDetails />
               </ProtectedRoute>
-            } 
+            }
+            
           />
-
+<Route 
+    path="/profile" 
+    element={
+        <ProtectedRoute>
+            <Profile />
+        </ProtectedRoute>
+    } 
+/>
           {/* Default route */}
           <Route 
             path="/" 

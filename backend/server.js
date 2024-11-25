@@ -16,6 +16,10 @@ app.use(cors({
 
 app.use(express.json())
 
+// Increase payload limit - Allow for larger images to be accepted
+app.use(express.json({limit: '50mb', extended: true}));
+app.use(express.urlencoded({limit: '50mb', extended: true}));
+
 /* Routes */
 app.use('/api/users', userRoutes)  // Changed from users to userRoutes
 app.use(players)
