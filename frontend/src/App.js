@@ -16,9 +16,9 @@ const NavigationBar = ({ token, onLogout }) => {
   const userRole = localStorage.getItem('userRole');
 
   return (
-    <Navbar bg="dark" variant="dark" expand="lg">
+    <Navbar style={{ backgroundColor: '#2E8B57' }} variant="dark" expand="lg">
       <Container>
-        <Navbar.Brand as={Link} to="/">Hurling Manager</Navbar.Brand>
+        <Navbar.Brand as={Link} to="/">Cul App</Navbar.Brand>
         <Navbar.Toggle aria-controls="basic-navbar-nav" />
         <Navbar.Collapse id="basic-navbar-nav">
           <Nav className="ms-auto">
@@ -105,7 +105,7 @@ const App = () => {
 
   return (
     <Router>
-      <div>
+      <div style={{ backgroundColor: '#f5f5f5', minHeight: '100vh' }}>
         <NavigationBar token={token} onLogout={handleLogout} />
         <Routes>
           {/* Public routes */}

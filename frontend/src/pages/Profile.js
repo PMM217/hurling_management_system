@@ -97,7 +97,7 @@ const Profile = () => {
     return (
         <Container className="mt-4">
             <Card>
-                <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
+            <Card.Header style={{ backgroundColor: '#2E8B57' }} className="text-white d-flex justify-content-between align-items-center">
                     <h4 className="mb-0">Player Profile</h4>
                     {!isEditing && (
                         <Button variant="light" onClick={() => setIsEditing(true)}>
@@ -217,7 +217,11 @@ const Profile = () => {
                                     </Form.Group>
 
                                     <div className="d-flex gap-2">
-                                        <Button type="submit" variant="primary" className="flex-grow-1">
+                                    <Button 
+                                            type="submit" 
+                                            style={{ backgroundColor: '#2E8B57', borderColor: '#2E8B57' }} 
+                                            className="flex-grow-1"
+                                        >
                                             Save Changes
                                         </Button>
                                         <Button 

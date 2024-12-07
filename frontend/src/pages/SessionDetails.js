@@ -190,14 +190,18 @@ const SessionDetails = () => {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleUpdate}>
-            Save Changes
-          </Button>
-        </Modal.Footer>
-      </Modal>
+    <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+      Cancel
+    </Button>
+    <Button 
+      onClick={handleUpdate}
+      style={{ backgroundColor: '#2E8B57', borderColor: '#2E8B57' }}
+      className="text-white"
+    >
+      Save Changes
+    </Button>
+  </Modal.Footer>
+</Modal>
     </Container>
   );
 };

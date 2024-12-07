@@ -58,47 +58,48 @@ const Login = ({ setToken }) => {
   };
 
   return (
-    <Container className="mt-5">
-      <Card className="mx-auto" style={{ maxWidth: '400px' }}>
-        <Card.Header className="bg-primary text-white">
-          <h4 className="mb-0">Login</h4>
-        </Card.Header>
-        <Card.Body>
-          {error && <Alert variant="danger">{error}</Alert>}
-          <Form onSubmit={handleSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="Enter your email"
-              />
-            </Form.Group>
+<Container className="mt-5">
+  <Card className="mx-auto" style={{ maxWidth: '400px' }}>
+    <Card.Header style={{ backgroundColor: '#2E8B57' }} className="text-white">
+      <h4 className="mb-0">Login</h4>
+    </Card.Header>
+    <Card.Body>
+      {error && <Alert variant="danger">{error}</Alert>}
+      <Form onSubmit={handleSubmit}>
+        <Form.Group className="mb-3">
+          <Form.Label>Email</Form.Label>
+          <Form.Control
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            placeholder="Enter your email"
+          />
+        </Form.Group>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Password</Form.Label>
-              <Form.Control
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="Enter your password"
-              />
-            </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>Password</Form.Label>
+          <Form.Control
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            placeholder="Enter your password"
+          />
+        </Form.Group>
 
-            <Button 
-              type="submit" 
-              className="w-100" 
-              disabled={loading}
-            >
-              {loading ? 'Logging in...' : 'Login'}
-            </Button>
-          </Form>
-        </Card.Body>
-      </Card>
-    </Container>
+        <Button 
+          type="submit" 
+          className="w-100" 
+          style={{ backgroundColor: '#2E8B57', borderColor: '#2E8B57' }}
+          disabled={loading}
+        >
+          {loading ? 'Logging in...' : 'Login'}
+        </Button>
+      </Form>
+    </Card.Body>
+  </Card>
+</Container>
   );
 };
 

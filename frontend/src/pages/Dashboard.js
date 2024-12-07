@@ -239,14 +239,18 @@ const Dashboard = () => {
           </Form>
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
-            Cancel
-          </Button>
-          <Button variant="primary" onClick={handleUpdate}>
-            Save Changes
-          </Button>
-        </Modal.Footer>
-      </Modal>
+    <Button variant="secondary" onClick={() => setShowEditModal(false)}>
+      Cancel
+    </Button>
+    <Button 
+      variant="primary" 
+      onClick={handleUpdate}
+      style={{ backgroundColor: '#2E8B57', borderColor: '#2E8B57' }}
+    >
+      Save Changes
+    </Button>
+  </Modal.Footer>
+</Modal>
     </div>
   );
 // Conditional rendering based on user role - This is where the Role Based Access COntrol occurs

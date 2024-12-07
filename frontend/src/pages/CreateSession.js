@@ -41,7 +41,7 @@ const CreateSession = () => {
   return (
     <Container className="mt-4">
       <Card className="mx-auto" style={{ maxWidth: '600px' }}>
-        <Card.Header className="bg-primary text-white">
+        <Card.Header style={{ backgroundColor: '#2E8B57', borderColor: '#2E8B57', color: 'white' }}>
           <h4 className="mb-0">Create Training Session</h4>
         </Card.Header>
         <Card.Body>
@@ -90,11 +90,12 @@ const CreateSession = () => {
             </Form.Group>
 
             <div className="d-flex gap-2">
-              <Button 
-                type="submit" 
-                className="flex-grow-1" 
-                disabled={loading}
-              >
+            <Button 
+    type="submit" 
+    className="flex-grow-1" 
+    style={{ backgroundColor: '#2E8B57', borderColor: '#2E8B57' }}
+    disabled={loading}
+>
                 {loading ? 'Creating...' : 'Create Session'}
               </Button>
               <Button 

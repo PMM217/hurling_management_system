@@ -39,14 +39,14 @@ const Register = () => {
   };
 
   return (
-    <Container className="mt-5">
-      <Card className="mx-auto" style={{ maxWidth: '400px' }}>
-        <Card.Header className="bg-primary text-white">
-          <h4 className="mb-0">Register</h4>
-        </Card.Header>
-        <Card.Body>
-          {error && <Alert variant="danger">{error}</Alert>}
-          <Form onSubmit={handleSubmit}>
+<Container className="mt-5">
+  <Card className="mx-auto" style={{ maxWidth: '400px' }}>
+    <Card.Header style={{ backgroundColor: '#2E8B57' }} className="text-white">
+      <h4 className="mb-0">Register</h4>
+    </Card.Header>
+    <Card.Body>
+      {error && <Alert variant="danger">{error}</Alert>}
+      <Form onSubmit={handleSubmit}>
             <Form.Group className="mb-3">
               <Form.Label>Name</Form.Label>
               <Form.Control
@@ -93,10 +93,11 @@ const Register = () => {
             </Form.Group>
 
             <Button 
-              type="submit" 
-              className="w-100" 
-              disabled={loading}
-            >
+          type="submit" 
+          className="w-100" 
+          style={{ backgroundColor: '#2E8B57', borderColor: '#2E8B57' }}
+          disabled={loading}
+        >
               {loading ? 'Registering...' : 'Register'}
             </Button>
           </Form>
