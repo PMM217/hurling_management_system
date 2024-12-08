@@ -1,113 +1,113 @@
-// const express = require("express")
-// const database = require("./connect")
-// const ObjectId = require("mongodb").ObjectId //Importing this allows mongodb to convert a string to ObjectId
+const express = require("express")
+const database = require("./connect")
+const ObjectId = require("mongodb").ObjectId //Importing this allows mongodb to convert a string to ObjectId
 
-// let playerRoutes = express.Router() //gives access to express.Router object
+let playerRoutes = express.Router() //gives access to express.Router object
 
-// // Helper function for error handling
-// const handleErrors = (error, response) => {
-//     console.error("Error:", error);
-//     response.status(500).json({ message: "Internal server error", error: error.toString() });
-// }
+// Helper function for error handling
+const handleErrors = (error, response) => {
+    console.error("Error:", error);
+    response.status(500).json({ message: "Internal server error", error: error.toString() });
+}
 
-// //1 - Retrieve all - as an example this would create -  http://localhost:3000/players - the .get method always requires a request and response
-// //async is added with the await key word to make sure code waits until data is finished processing before it moves on
-// playerRoutes.route("/players").get(async(request, response) => {
-//     try {
-//         let db = database.getDb() //gets access to mongo database
-//         console.log("Attempting to retrieve all players");
-//         let data = await db.collection("playerData").find({}).toArray() //without "toArray" mongo returns a cursor therefore adding toArray returns the data in the correct format
-//         console.log("Retrieved data:", data);
-//         if (data.length > 0) {
-//             response.json(data) //taking data - turning it into JSON format - response is returning it to frontend
-//         } else {
-//             console.log("No players found");
-//             response.status(404).json({ message: "No players found in the database" })
-//         }
-//     } catch (error) {
-//         handleErrors(error, response)
-//     }
-// })
+//1 - Retrieve all - as an example this would create -  http://localhost:3000/players - the .get method always requires a request and response
+//async is added with the await key word to make sure code waits until data is finished processing before it moves on
+playerRoutes.route("/players").get(async(request, response) => {
+    try {
+        let db = database.getDb() //gets access to mongo database
+        console.log("Attempting to retrieve all players");
+        let data = await db.collection("playerData").find({}).toArray() //without "toArray" mongo returns a cursor therefore adding toArray returns the data in the correct format
+        console.log("Retrieved data:", data);
+        if (data.length > 0) {
+            response.json(data) //taking data - turning it into JSON format - response is returning it to frontend
+        } else {
+            console.log("No players found");
+            response.status(404).json({ message: "No players found in the database" })
+        }
+    } catch (error) {
+        handleErrors(error, response)
+    }
+})
 
-// //2 - Read One
-// playerRoutes.route("/players/:id").get(async(request, response) => {
-//     try {
-//         let db = database.getDb()
-//         console.log("Attempting to retrieve player with id:", request.params.id);
-//         let data = await db.collection("playerData").findOne({_id: new ObjectId(request.params.id)})
-//         console.log("Retrieved data:", data);
-//         if (data) {
-//             response.json(data)
-//         } else {
-//             console.log("Player not found");
-//             response.status(404).json({ message: "Player not found" })
-//         }
-//     } catch (error) {
-//         handleErrors(error, response)
-//     }
-// })
+//2 - Read One
+playerRoutes.route("/players/:id").get(async(request, response) => {
+    try {
+        let db = database.getDb()
+        console.log("Attempting to retrieve player with id:", request.params.id);
+        let data = await db.collection("playerData").findOne({_id: new ObjectId(request.params.id)})
+        console.log("Retrieved data:", data);
+        if (data) {
+            response.json(data)
+        } else {
+            console.log("Player not found");
+            response.status(404).json({ message: "Player not found" })
+        }
+    } catch (error) {
+        handleErrors(error, response)
+    }
+})
 
-// //3 - Create One
-// playerRoutes.route("/players").post(async(request, response) => {
-//     try {
-//         let db = database.getDb()
-//         //new object which matches the properties on mongodb
-//         let mongoObject = {
-//             name: request.body.name,
-//             position: request.body.position
-//         }
-//         console.log("Attempting to create new player:", mongoObject);
-//         let data = await db.collection("playerData").insertOne(mongoObject) 
-//         console.log("Insert result:", data);
-//         response.status(201).json(data)
-//     } catch (error) {
-//         handleErrors(error, response)
-//     }
-// })
+//3 - Create One
+playerRoutes.route("/players").post(async(request, response) => {
+    try {
+        let db = database.getDb()
+        //new object which matches the properties on mongodb
+        let mongoObject = {
+            name: request.body.name,
+            position: request.body.position
+        }
+        console.log("Attempting to create new player:", mongoObject);
+        let data = await db.collection("playerData").insertOne(mongoObject) 
+        console.log("Insert result:", data);
+        response.status(201).json(data)
+    } catch (error) {
+        handleErrors(error, response)
+    }
+})
 
-// //4 - Update One
-// playerRoutes.route("/players/:id").put(async(request, response) => {
-//     try {
-//         let db = database.getDb()
-//         let mongoObject = {
-//             $set: {
-//                 name: request.body.name,
-//                 position: request.body.position
-//             }
-//         }
-//         console.log("Attempting to update player with id:", request.params.id);
-//         let data = await db.collection("playerData").updateOne({_id: new ObjectId(request.params.id)}, mongoObject)
-//         console.log("Update result:", data);
-//         if (data.matchedCount > 0) {
-//             response.json(data)
-//         } else {
-//             console.log("Player not found for update");
-//             response.status(404).json({ message: "Player not found" })
-//         }
-//     } catch (error) {
-//         handleErrors(error, response)
-//     }
-// })
+//4 - Update One
+playerRoutes.route("/players/:id").put(async(request, response) => {
+    try {
+        let db = database.getDb()
+        let mongoObject = {
+            $set: {
+                name: request.body.name,
+                position: request.body.position
+            }
+        }
+        console.log("Attempting to update player with id:", request.params.id);
+        let data = await db.collection("playerData").updateOne({_id: new ObjectId(request.params.id)}, mongoObject)
+        console.log("Update result:", data);
+        if (data.matchedCount > 0) {
+            response.json(data)
+        } else {
+            console.log("Player not found for update");
+            response.status(404).json({ message: "Player not found" })
+        }
+    } catch (error) {
+        handleErrors(error, response)
+    }
+})
 
-// //5 - Delete One
-// playerRoutes.route("/players/:id").delete(async(request, response) => {
-//     try {
-//         let db = database.getDb()
-//         console.log("Attempting to delete player with id:", request.params.id);
-//         let data = await db.collection("playerData").deleteOne({_id: new ObjectId(request.params.id)})
-//         console.log("Delete result:", data);
-//         if (data.deletedCount > 0) {
-//             response.json(data)
-//         } else {
-//             console.log("Player not found for deletion");
-//             response.status(404).json({ message: "Player not found" })
-//         }
-//     } catch (error) {
-//         handleErrors(error, response)
-//     }
-// })
+//5 - Delete One
+playerRoutes.route("/players/:id").delete(async(request, response) => {
+    try {
+        let db = database.getDb()
+        console.log("Attempting to delete player with id:", request.params.id);
+        let data = await db.collection("playerData").deleteOne({_id: new ObjectId(request.params.id)})
+        console.log("Delete result:", data);
+        if (data.deletedCount > 0) {
+            response.json(data)
+        } else {
+            console.log("Player not found for deletion");
+            response.status(404).json({ message: "Player not found" })
+        }
+    } catch (error) {
+        handleErrors(error, response)
+    }
+})
 
-// module.exports = playerRoutes
+module.exports = playerRoutes
 
 
 
