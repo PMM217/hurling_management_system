@@ -1,8 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Container, Card, Form, Button, Row, Col, Alert, Image } from 'react-bootstrap';
-import axios from 'axios';
+//Import required dependencies
+import React, { useState, useEffect, useCallback } from 'react'; //React and hooks
+import { Container, Card, Form, Button, Row, Col, Alert, Image } from 'react-bootstrap'; //UI components
+import axios from 'axios'; //HTTP client
+import config from '../config'; //API configuration
 
+//Profile component - Manages user profile information and image
 const Profile = () => {
+    //State management
     const [profile, setProfile] = useState({
         name: '',
         age: '',
@@ -12,23 +16,26 @@ const Profile = () => {
         county: '',
         imageUrl: ''
     });
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [isEditing, setIsEditing] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(null);
+    const [error, setError] = useState(''); //Error message state
+    const [success, setSuccess] = useState(''); //Success message state
+    const [loading, setLoading] = useState(true); //Loading state
+    const [isEditing, setIsEditing] = useState(false); //Edit mode toggle
+    const [selectedImage, setSelectedImage] = useState(null); //Selected image for upload
 
-    // Get the JWT token
+    //Get the JWT token
     const token = localStorage.getItem('jwt_token');
 
+     //Fetch profile data function wrapped in useCallback
     const fetchProfile = useCallback(async () => {
         try {
-            const response = await axios.get('http://localhost:3000/api/users/profile', {
+            //const response = await axios.get('http://localhost:3000/api/users/profile', {
+                const response = await axios.get(`${config.apiUrl}/users/profile`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
-            
+
+            //Extract and set user data
             const userData = response.data;
             setProfile({
                 name: userData.name || '',
@@ -46,18 +53,21 @@ const Profile = () => {
         }
     }, [token]);
 
+    //Load profile data on component mount
     useEffect(() => {
         fetchProfile();
     }, [fetchProfile]);
 
+    //Handle image file selection - (Not currently working)
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            if (file.size > 1048576) { // 1MB
+            if (file.size > 1048576) { // Check file size (1MB limit)
                 setError('File size should be less than 1MB');
                 return;
             }
 
+            //Read and set image file
             const reader = new FileReader();
             reader.onloadend = () => {
                 setSelectedImage(reader.result);
@@ -67,16 +77,16 @@ const Profile = () => {
         }
     };
 
+    //Handle form submission for profile updates
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setSuccess('');
 
         try {
-            await axios.put(
-                'http://localhost:3000/api/users/profile',
+            //await axios.put('http://localhost:3000/api/users/profile',
+                await axios.post(`${config.apiUrl}/users/profile`, {
                 profile,
-                {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -89,7 +99,7 @@ const Profile = () => {
             setError('Failed to update profile');
         }
     };
-
+//Show loading state while fetching data
     if (loading) {
         return <Container className="mt-4">Loading...</Container>;
     }

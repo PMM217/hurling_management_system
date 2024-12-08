@@ -1,20 +1,25 @@
-const express = require("express");
-const { ObjectId } = require('mongodb');
-const database = require("../connect");
-const jwt = require('jsonwebtoken');
+const express = require("express"); //express for routing functionality
+const { ObjectId } = require('mongodb'); //ObjectId for MongoDB document ID handling
+const database = require("../connect"); //Custom database connection module
+const jwt = require('jsonwebtoken'); //JWT for authentication tokens
 const router = express.Router();
-require('dotenv').config({ path: './config.env' });
+require('dotenv').config({ path: './config.env' }); //Load environment variables from config.env
 
-// Middleware to verify JWT token
+//Custom middleware to verify JWT tokens in request headers
 const verifyToken = (req, res, next) => {
     try {
+        //Extract authorization header
         const authHeader = req.headers.authorization;
+        //Check if header exists and follows Bearer token format
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
             return res.status(401).json({ message: "No token provided" });
         }
 
+        //Split 'Bearer token' and take token part
         const token = authHeader.split(' ')[1];
+        //Verify token using JWT_SECRET from environment variables
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        //Attach decoded user info to request object for use in middleware
         req.user = decoded;
         next();
     } catch (error) {
@@ -22,35 +27,37 @@ const verifyToken = (req, res, next) => {
     }
 };
 
-// Register endpoint
+//User registration endpoint
 router.post("/register", async (req, res) => {
     try {
+        //Extract user data from request body using destructuring
         const { name, email, password, role } = req.body;
         const db = database.getDb();
         
-        // Check if user already exists
+        //Check for existing user to prevent duplicates
         const existingUser = await db.collection("users").findOne({ email });
         if (existingUser) {
             return res.status(400).json({ message: "User already exists" });
         }
 
-        // Create new user
+        //Insert new user into database with initial empty profile
         const result = await db.collection("users").insertOne({
             name,
             email,
             password,
             role,
-            profileInfo: {}, // Initialize empty profile info
+            profileInfo: {}, // Initialize empty profile info object
             createdAt: new Date()
         });
 
-        // Generate JWT token
+        //Generate JWT token for immediate authentication
         const token = jwt.sign(
             { userId: result.insertedId, role },
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
 
+        //Send success response with token and user data
         res.status(201).json({
             message: "Registration successful",
             token,
@@ -70,27 +77,29 @@ router.post("/register", async (req, res) => {
     }
 });
 
-// Login endpoint
+//User login endpoint
 router.post("/login", async (req, res) => {
     try {
+        //Extract login credentials from request body
         const { email, password } = req.body;
         const db = database.getDb();
 
-        // Find user by email
+        //Find user by email
         const user = await db.collection("users").findOne({ email });
 
-        // Check if user exists and password matches
+        //Verify user exists and password matches
         if (!user || password !== user.password) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
 
-        // Generate JWT token
+        //Generate new JWT token for authenticated session
         const token = jwt.sign(
             { userId: user._id, role: user.role },
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
 
+        //Return success response with token and user data
         res.json({
             message: "Login successful",
             token,
@@ -107,12 +116,14 @@ router.post("/login", async (req, res) => {
     }
 });
 
-// Verify token endpoint
+//Token verification endpoint - Used to validate existing tokens
 router.get("/verify", verifyToken, async (req, res) => {
     try {
         const db = database.getDb();
+        //Convert string ID to MongoDB ObjectId
         const userId = new ObjectId(req.user.userId);
         
+        //Find user but exclude password field from response
         const user = await db.collection("users").findOne(
             { _id: userId },
             { projection: { password: 0 } }
@@ -128,20 +139,20 @@ router.get("/verify", verifyToken, async (req, res) => {
     }
 });
 
-// Get all players endpoint
+//Get all players endpoint - Manager only access
 router.get("/players", verifyToken, async (req, res) => {
     try {
         const db = database.getDb();
         
-        // Only allow managers to access this endpoint
+        //Role-based access control check
         if (req.user.role !== 'manager') {
             return res.status(403).json({ message: "Access denied. Managers only." });
         }
 
-        // Get all users with role 'player'
+        //Retrieve all players with password field excluded
         const players = await db.collection("users")
             .find({ role: 'player' })
-            .project({ password: 0 }) // Exclude passwords from response
+            .project({ password: 0 })
             .toArray();
 
         res.json(players);
@@ -151,19 +162,20 @@ router.get("/players", verifyToken, async (req, res) => {
     }
 });
 
-// Delete player endpoint
+//Delete player endpoint - Manager only access
 router.delete("/players/:id", verifyToken, async (req, res) => {
     try {
         const db = database.getDb();
         
-        // Only allow managers to delete players
+        //Role-based access control check
         if (req.user.role !== 'manager') {
             return res.status(403).json({ message: "Access denied. Managers only." });
         }
 
+        //Delete player - check to ensure only players can be deleted
         const result = await db.collection("users").deleteOne({
             _id: new ObjectId(req.params.id),
-            role: 'player' // Extra check to ensure only players can be deleted
+            role: 'player'
         });
 
         if (result.deletedCount === 0) {
@@ -177,15 +189,16 @@ router.delete("/players/:id", verifyToken, async (req, res) => {
     }
 });
 
-// Get user profile endpoint
+//Get user profile endpoint
 router.get("/profile", verifyToken, async (req, res) => {
     try {
         const db = database.getDb();
         const userId = new ObjectId(req.user.userId);
         
+        //Fetch user profile excluding password
         const user = await db.collection("users").findOne(
             { _id: userId },
-            { projection: { password: 0 } } // Exclude password from response
+            { projection: { password: 0 } }
         );
 
         if (!user) {
@@ -199,14 +212,16 @@ router.get("/profile", verifyToken, async (req, res) => {
     }
 });
 
-// Update profile endpoint
+//Update profile endpoint
 router.put("/profile", verifyToken, async (req, res) => {
     try {
         const db = database.getDb();
         const userId = new ObjectId(req.user.userId);
         
+        //Extract profile data from request body
         const { name, age, height, weight, position, county, imageUrl } = req.body;
         
+        //Update user profile with new information
         const result = await db.collection("users").updateOne(
             { _id: userId },
             { 
@@ -236,4 +251,5 @@ router.put("/profile", verifyToken, async (req, res) => {
     }
 });
 
+//Export router for use in main application
 module.exports = router;

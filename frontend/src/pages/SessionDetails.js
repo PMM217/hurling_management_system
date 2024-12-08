@@ -1,90 +1,101 @@
-import React, { useState, useEffect } from 'react';
+// Import required dependencies
+import React, { useState, useEffect, useCallback } from 'react';
 import { Container, Card, Table, Alert, Button, Modal, Form } from 'react-bootstrap';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom'; // Hooks for route parameters and navigation
 import axios from 'axios';
+import config from '../config';
 
+// SessionDetails component - Shows detailed view of a specific training session
 const SessionDetails = () => {
-  const [session, setSession] = useState(null);
-  const [attendanceDetails, setAttendanceDetails] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [message, setMessage] = useState('');
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editFormData, setEditFormData] = useState({
-    date: '',
-    time: '',
-    location: '',
-    description: ''
-  });
-  
-  const { id } = useParams();
-  const navigate = useNavigate();
+   // State management
+   const [session, setSession] = useState(null); // Stores session data
+   const [attendanceDetails, setAttendanceDetails] = useState([]); // Stores attendance records
+   const [loading, setLoading] = useState(true); // Loading state
+   const [error, setError] = useState(''); // Error message state
+   const [message, setMessage] = useState(''); // Success message state
+   const [showEditModal, setShowEditModal] = useState(false); // Controls edit modal visibility
+   const [editFormData, setEditFormData] = useState({
+       date: '',
+       time: '',
+       location: '',
+       description: ''
+   });
 
-  useEffect(() => {
-    fetchSessionDetails();
-  }, [id]);
+//Get session ID from URL parameters and initialize navigation
+    const { id } = useParams();
+    const navigate = useNavigate();
 
-  const fetchSessionDetails = async () => {
-    try {
-      const response = await axios.get(`http://localhost:3000/api/sessions/${id}/attendance`);
-      setSession(response.data.session);
-      setAttendanceDetails(response.data.attendance);
-      
-      // Set initial form data for editing
-      const sessionDate = new Date(response.data.session.date);
-      setEditFormData({
-        date: sessionDate.toISOString().split('T')[0],
-        time: sessionDate.toTimeString().split(':').slice(0, 2).join(':'),
-        location: response.data.session.location,
-        description: response.data.session.description || ''
-      });
-      
-      setLoading(false);
-    } catch (err) {
-      setError('Failed to load session details');
-      setLoading(false);
-    }
-  };
+   //Fetch session details function wrapped in useCallback
+    const fetchSessionDetails = useCallback(async () => {
+        try {
+          //Get session data and attendance details
+            const response = await axios.get(`${config.apiUrl}/sessions/${id}/attendance`);
+            setSession(response.data.session);
+            setAttendanceDetails(response.data.attendance);
+            
+            //Prepare date and time for edit form
+            const sessionDate = new Date(response.data.session.date);
+            setEditFormData({
+                date: sessionDate.toISOString().split('T')[0],
+                time: sessionDate.toTimeString().split(':').slice(0, 2).join(':'),
+                location: response.data.session.location,
+                description: response.data.session.description || ''
+            });
+            
+            setLoading(false);
+        } catch (err) {
+            setError('Failed to load session details');
+            setLoading(false);
+        }
+    }, [id]);
 
-  const handleEdit = () => {
-    setShowEditModal(true);
-  };
+//Load session data on component mount
+    useEffect(() => {
+        fetchSessionDetails();
+    }, [fetchSessionDetails]);
 
-  const handleUpdate = async () => {
-    try {
-      const dateTime = new Date(`${editFormData.date}T${editFormData.time}`);
-      await axios.put(`http://localhost:3000/api/sessions/${id}`, {
-        date: dateTime,
-        location: editFormData.location,
-        description: editFormData.description
-      });
-      
-      setShowEditModal(false);
-      setMessage('Session updated successfully');
-      fetchSessionDetails(); // Refresh the data
-      
-      setTimeout(() => setMessage(''), 3000);
-    } catch (error) {
-      setError('Error updating session');
-    }
-  };
 
-  const handleDelete = async () => {
-    if (window.confirm('Are you sure you want to delete this session? This action cannot be undone.')) {
-      try {
-        await axios.delete(`http://localhost:3000/api/sessions/${id}`);
-        navigate('/dashboard', { state: { message: 'Session deleted successfully' } });
-      } catch (error) {
-        setError('Error deleting session');
-      }
-    }
-  };
+    const handleEdit = () => {
+        setShowEditModal(true);
+    };
+//Update session handler
+    const handleUpdate = async () => {
+        try {
+          //Combine date and time for backend
+            const dateTime = new Date(`${editFormData.date}T${editFormData.time}`);
+            await axios.put(`${config.apiUrl}/sessions/${id}`, {
+                date: dateTime,
+                location: editFormData.location,
+                description: editFormData.description
+            });
+            //Show success message and refresh data
+            setShowEditModal(false);
+            setMessage('Session updated successfully');
+            fetchSessionDetails();
+            
+            setTimeout(() => setMessage(''), 3000);
+        } catch (error) {
+            setError('Error updating session');
+        }
+    };
+//Delete session handler with confirmation
+    const handleDelete = async () => {
+        if (window.confirm('Are you sure you want to delete this session? This action cannot be undone.')) {
+            try {
+                await axios.delete(`${config.apiUrl}/sessions/${id}`);
+                navigate('/dashboard', { state: { message: 'Session deleted successfully' } });
+            } catch (error) {
+                setError('Error deleting session');
+            }
+        }
+    };
+//Loading and error states
+    if (loading) return <Container className="mt-4">Loading...</Container>;
+    if (error) return <Container className="mt-4"><Alert variant="danger">{error}</Alert></Container>;
+    if (!session) return <Container className="mt-4"><Alert variant="info">Session not found</Alert></Container>;
 
-  if (loading) return <Container className="mt-4">Loading...</Container>;
-  if (error) return <Container className="mt-4"><Alert variant="danger">{error}</Alert></Container>;
-  if (!session) return <Container className="mt-4"><Alert variant="info">Session not found</Alert></Container>;
-
-  return (
+     //Component render with session details and attendance list
+    return (
     <Container className="mt-4">
       {message && <Alert variant="success">{message}</Alert>}
       
