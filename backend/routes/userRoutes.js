@@ -211,7 +211,38 @@ router.get("/profile", verifyToken, async (req, res) => {
         res.status(500).json({ message: "Error fetching profile" });
     }
 });
-
+// Update the sessions attendance
+router.post("/sessions/attendance", verifyToken, async (req, res) => {
+    try {
+      const db = database.getDb();
+      const { sessionId, userId, attending } = req.body;
+  
+   
+      const result = await db.collection("sessions").updateOne(
+        { _id: new ObjectId(sessionId) },
+        {
+          $pull: { attendance: { userId: userId } }  // Remove any existing attendance
+        }
+      );
+  
+      // Add the new attendance record
+      await db.collection("sessions").updateOne(
+        { _id: new ObjectId(sessionId) },
+        {
+          $push: { attendance: { 
+            userId: userId, 
+            attending: attending,
+            updatedAt: new Date()
+          }}
+        }
+      );
+  
+      res.json({ message: "Attendance updated successfully" });
+    } catch (error) {
+      console.error("Error updating attendance:", error);
+      res.status(500).json({ message: "Error updating attendance" });
+    }
+  });
 //Update profile endpoint
 router.put("/profile", verifyToken, async (req, res) => {
     try {
