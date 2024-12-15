@@ -16,6 +16,7 @@ import CreateSession from './pages/CreateSession';
 import SessionDetails from './pages/SessionDetails';
 import Players from './pages/Players';
 import Profile from './pages/Profile';
+import config from './config';
 
 //Axios for making HTTP requests
 import axios from 'axios';
@@ -106,7 +107,7 @@ const App = () => {
     const verifyToken = async () => {
       if (token) {
         try {
-          await axios.get('http://localhost:3000/api/users/verify', {
+          await axios.get(`${config.apiUrl}/users/verify`, {// await axios.get('http://localhost:3000/api/users/verify', {
             headers: { Authorization: `Bearer ${token}` }
           });
           console.log('Token verified successfully');

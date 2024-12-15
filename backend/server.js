@@ -10,7 +10,9 @@ const PORT = 3000
 
 /* App.use funtion that mounts Middleware - cors library helps sharing resources across differennt domains */
 app.use(cors({
-    origin: 'http://localhost:3001', 
+    origin: process.env.NODE_ENV === `production`
+    ? 'http://107.23.240.190:3001'
+    : 'http://localhost:3001', 
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization']
