@@ -85,7 +85,7 @@ const Profile = () => {
 
         try {
             //await axios.put('http://localhost:3000/api/users/profile',
-                await axios.post(`${config.apiUrl}/users/profile`, {
+                await axios.put(`${config.apiUrl}/users/profile`, {
                 profile,
                     headers: {
                         Authorization: `Bearer ${token}`
